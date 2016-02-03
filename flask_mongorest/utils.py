@@ -91,3 +91,10 @@ def equal(a, b):
         return a == b
     except: # Exception during comparison, mainly datetimes.
         return False
+
+
+def is_object_id(x):
+    if type(ObjectId(x)) is ObjectId:
+        return True
+    else:
+        return False

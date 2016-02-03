@@ -1,3 +1,7 @@
+from utils import is_object_id, isint
+from bson import ObjectId
+
+
 class Operator(object):
     op = 'exact'
 
@@ -22,20 +26,26 @@ class Operator(object):
         kwargs = self.prepare_queryset_kwargs(field, value, negate)
         return queryset.filter(**kwargs)
 
+
 class Ne(Operator):
     op = 'ne'
+
 
 class Lt(Operator):
     op = 'lt'
 
+
 class Lte(Operator):
     op = 'lte'
+
 
 class Gt(Operator):
     op = 'gt'
 
+
 class Gte(Operator):
     op = 'gte'
+
 
 class Exact(Operator):
     op = 'exact'
@@ -48,8 +58,10 @@ class Exact(Operator):
         else:
             return {field: value}
 
+
 class IExact(Operator):
     op = 'iexact'
+
 
 class In(Operator):
     op = 'in'
@@ -61,25 +73,53 @@ class In(Operator):
             op = negate and 'nin' or self.op
         else:
             op = negate and 'ne' or ''
+        if type(value) is list:
+            for index, x in enumerate(value):
+                if isint(x):
+                    value[index] = int(x)
+        elif isint(value):
+            value = int(value)
         return {'__'.join(filter(None, [field, op])): value}
+
+
+class InObjectId(Operator):
+    op = 'in'
+
+    def prepare_queryset_kwargs(self, field, value, negate):
+        # only use 'in' or 'nin' if multiple values are specified
+        if ',' in value:
+            value = [ObjectId(x) for x in value.split(',') if is_object_id(x)]
+            op = negate and 'nin' or self.op
+        else:
+            if is_object_id(value):
+                value = ObjectId(value)
+            op = negate and 'ne' or ''
+        return {'__'.join(filter(None, [field, op])): int(value)}
+
 
 class Contains(Operator):
     op = 'contains'
-    
+
+
 class IContains(Operator):
     op = 'icontains'
 
+
 class Startswith(Operator):
     op = 'startswith'
-    
+
+
 class IStartswith(Operator):
     op = 'istartswith'
 
+
 class Endswith(Operator):
     op = 'endswith'
-    
+
+
 class IEndswith(Operator):
     op = 'iendswith'
+
 
 class Boolean(Operator):
     op = 'exact'
@@ -94,4 +134,3 @@ class Boolean(Operator):
             bool_value = not bool_value
 
         return {field: bool_value}
-
