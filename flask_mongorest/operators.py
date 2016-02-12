@@ -97,6 +97,27 @@ class InObjectId(Operator):
         return {'__'.join(filter(None, [field, op])): int(value)}
 
 
+class InDict(Operator):
+    op = 'indict'
+
+    def prepare_queryset_kwargs(self, field, value, negate):
+        """
+        Function: prepare_queryset_kwargs
+        Summary: Prepara la query para los casos que se deban buscar dentro
+        de una lista que posee diccionarios.
+        Examples: key=[field_dict].[value]
+        Attributes:
+        Returns: query
+        """
+        # only use 'in' or 'nin' if multiple values are specified
+        dict_field, vals = value.split('.')
+        if ',' in vals:
+            value = [x for x in vals.split(',') if x]
+        else:
+            value = [vals]
+        return dict(__raw__={field + '.' + dict_field: {"$in": value}})
+
+
 class Contains(Operator):
     op = 'contains'
 
