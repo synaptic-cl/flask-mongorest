@@ -501,6 +501,7 @@ class Resource(object):
 
         qs = self.apply_filters(qs, params)
         qs = self.apply_ordering(qs, params)
+        count = qs.count()
 
         limit = None
         if not custom_qs and not all:
@@ -524,7 +525,7 @@ class Resource(object):
         if self.related_resources_hints:
             self.fetch_related_resources(qs, self.get_requested_fields(params=params))
 
-        return qs, has_more
+        return qs, has_more, {'count': count}
 
     def save_related_objects(self, obj, parent_resources=None):
         if not parent_resources:
