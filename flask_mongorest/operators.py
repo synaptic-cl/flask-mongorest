@@ -113,7 +113,14 @@ class InDict(Operator):
         dict_field, vals = value.split('.')
         if ',' in vals:
             value = [x for x in vals.split(',') if x]
+            for index, x in enumerate(value):
+                if isint(x):
+                    value[index] = int(x)
+                else:
+                    value[index] = x
         else:
+            if isint(vals):
+                vals = int(vals)
             value = [vals]
         return dict(__raw__={field + '.' + dict_field: {"$in": value}})
 
