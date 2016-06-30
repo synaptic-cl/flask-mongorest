@@ -82,6 +82,17 @@ class In(Operator):
         return {'__'.join(filter(None, [field, op])): value}
 
 
+class Exists(Operator):
+    op = 'exists'
+
+    def prepare_queryset_kwargs(self, field, value, negate):
+        if value.lower() == 'false':
+            value = False
+        else:
+            value = True
+        return {'__'.join(filter(None, [field, self.op])): value}
+
+
 class InObjectId(Operator):
     op = 'in'
 
