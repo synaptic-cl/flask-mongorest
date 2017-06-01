@@ -1,4 +1,5 @@
 import json
+import bson.json_util
 import datetime
 import dateutil.parser
 import mongoengine
@@ -72,6 +73,11 @@ class Resource(object):
                 except AttributeError: # mocked request with regular dict
                     self._params = request.args
         return self._params
+    
+    def decode_json_date(self, dct):
+        if '$date' in dct:
+            return datetime.datetime.utcfromtimestamp(float(dct['$date'])/1000)
+        return bson.json_util.object_hook(dct)
 
     @property
     def raw_data(self):
@@ -83,7 +89,7 @@ class Resource(object):
                     raise ValidationError({'error': "Chunked Transfer-Encoding is not supported."})
 
                 try:
-                    self._raw_data = json.loads(request.data)
+                    self._raw_data = json.loads(request.data, object_hook=self.decode_json_date)
                 except ValueError:
                     raise ValidationError({'error': 'The request contains invalid JSON.'})
                 if not isinstance(self._raw_data, dict):
