@@ -13,6 +13,15 @@ def isint(int_str):
         return True
     except (TypeError, ValueError):
         return False
+    
+def is_float(value):
+    try:
+        float(value)
+        return True
+    except ValueError:
+        return False
+    except:
+        return False
 
 class MongoEncoder(json.JSONEncoder):
     def default(self, value, **kwargs):
@@ -98,3 +107,47 @@ def is_object_id(x):
         return True
     else:
         return False
+    
+    
+def is_datetime(date):
+    try:
+        date_obj = to_datetime(date)
+        return True, date_obj
+    except Exception:
+        return False, None
+
+
+def to_datetime(date):
+    """
+    Function: to_datetime
+    Summary: formate la fecha a tipo datetime
+    Examples: dd/mm/yyyy, dd/mm/yyyy, yyyy-mm-dd, etc
+    Attributes:
+        @param (date):
+    Returns: datetime
+    """
+    list_format = [
+        '%m/%Y',
+        '%Y-%m-%d',
+        '%d-%m-%Y',
+        '%d/%m/%Y',
+        '%Y-%m-%d %H:%M',
+        '%d-%m-%Y %H:%M:%S',
+        '%Y-%m-%d %H:%M:%S',
+        '%Y-%m-%d %H:%M:%S.%f',
+        '%d/%m/%Y %H:%M:%S',
+        '%d/%m/%Y %H:%M:%S.%f',
+        '%Y-%m-%dT%H:%M:%S',
+        '%Y-%m-%dT%H:%M:%S.%f'
+    ]
+    try:
+        if type(date) is datetime.datetime:
+            return date
+        for f in list_format:
+            try:
+                return datetime.datetime.strptime(date, f)
+            except Exception:
+                continue
+        raise
+    except Exception:
+        raise 'Error al convertir a fecha.'

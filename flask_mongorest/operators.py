@@ -1,4 +1,4 @@
-from utils import is_object_id, isint
+from utils import is_object_id, isint, is_datetime, is_float
 from bson import ObjectId
 
 
@@ -26,25 +26,41 @@ class Operator(object):
         kwargs = self.prepare_queryset_kwargs(field, value, negate)
         return queryset.filter(**kwargs)
 
+class ComparisonOperator(Operator):
+    
+    def prepare_queryset_kwargs(self, field, value, negate):
+        is_date, date_obj = is_datetime(value)
+        if is_date:
+            query_value = date_obj
+        elif is_float(value):
+            query_value = float(value)
+        else:
+            query_value = value
+        return {'__'.join(filter(None, [field, self.op])): query_value}
+    
 
-class Ne(Operator):
+class Ne(ComparisonOperator):
     op = 'ne'
 
 
-class Lt(Operator):
+class Lt(ComparisonOperator):
     op = 'lt'
 
 
-class Lte(Operator):
+class Lte(ComparisonOperator):
     op = 'lte'
 
 
-class Gt(Operator):
+class Gt(ComparisonOperator):
     op = 'gt'
 
 
-class Gte(Operator):
+class Gte(ComparisonOperator):
     op = 'gte'
+    
+class Equ(ComparisonOperator):
+    #Hack for comparing equals float and dates values
+    op = 'exact'
 
 
 class Exact(Operator):
