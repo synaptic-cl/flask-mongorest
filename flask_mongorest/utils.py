@@ -13,6 +13,15 @@ def isint(int_str):
         return True
     except (TypeError, ValueError):
         return False
+    
+def is_float(value):
+    try:
+        float(value)
+        return True
+    except ValueError:
+        return False
+    except:
+        return False
 
 class MongoEncoder(json.JSONEncoder):
     def default(self, value, **kwargs):

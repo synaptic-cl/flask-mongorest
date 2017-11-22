@@ -1,4 +1,4 @@
-from utils import is_object_id, isint, is_datetime
+from utils import is_object_id, isint, is_datetime, is_float
 from bson import ObjectId
 
 
@@ -32,6 +32,8 @@ class ComparisonOperator(Operator):
         is_date, date_obj = is_datetime(value)
         if is_date:
             query_value = date_obj
+        elif is_float(value):
+            query_value = float(value)
         else:
             query_value = value
         return {'__'.join(filter(None, [field, self.op])): query_value}
@@ -55,6 +57,10 @@ class Gt(ComparisonOperator):
 
 class Gte(ComparisonOperator):
     op = 'gte'
+    
+class Equ(ComparisonOperator):
+    #Hack for comparing equals float and dates values
+    op = 'exact'
 
 
 class Exact(Operator):
