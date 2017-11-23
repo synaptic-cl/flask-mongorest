@@ -1,5 +1,6 @@
 from utils import is_object_id, isint, is_datetime, is_float
 from bson import ObjectId
+from mongoengine.queryset.visitor import Q
 
 
 class Operator(object):
@@ -189,3 +190,30 @@ class Boolean(Operator):
             bool_value = not bool_value
 
         return {field: bool_value}
+
+class Or(Operator):
+    op = 'or'
+
+    def prepare_queryset_kwargs(self, field, value, negate):
+        
+        fields = field.split('|')
+        values = value.split('|')
+        
+        queries = []
+        
+        for i, field in enumerate(fields):
+            value = values[i]
+            is_date, date_obj = is_datetime(value)
+            if is_date:
+                query_value = date_obj
+            elif is_float(value):
+                query_value = float(value)
+            else:
+                query_value = value
+            queries.append({field : query_value})
+        
+        return (Q(**query) for query in queries)
+
+    def apply(self, queryset, field, value, negate=False):
+        conditions = self.prepare_queryset_kwargs(field, value, negate)
+        return queryset.filter(reduce(lambda a, b: a | b, conditions))
