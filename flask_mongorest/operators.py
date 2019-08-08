@@ -27,8 +27,9 @@ class Operator(object):
         kwargs = self.prepare_queryset_kwargs(field, value, negate)
         return queryset.filter(**kwargs)
 
+
 class ComparisonOperator(Operator):
-    
+
     def prepare_queryset_kwargs(self, field, value, negate):
         is_date, date_obj = is_datetime(value)
         if is_date:
@@ -38,7 +39,7 @@ class ComparisonOperator(Operator):
         else:
             query_value = value
         return {'__'.join(filter(None, [field, self.op])): query_value}
-    
+
 
 class Ne(ComparisonOperator):
     op = 'ne'
@@ -58,9 +59,10 @@ class Gt(ComparisonOperator):
 
 class Gte(ComparisonOperator):
     op = 'gte'
-    
+
+
 class Equ(ComparisonOperator):
-    #Hack for comparing equals float and dates values
+    # Hack for comparing equals float and dates values
     op = 'exact'
 
 
@@ -191,16 +193,17 @@ class Boolean(Operator):
 
         return {field: bool_value}
 
+
 class Or(Operator):
     op = 'or'
 
     def prepare_queryset_kwargs(self, field, value, negate):
-        
+
         fields = field.split('|')
         values = value.split('|')
-        
+
         queries = []
-        
+
         for i, field in enumerate(fields):
             value = values[i]
             is_date, date_obj = is_datetime(value)
@@ -210,10 +213,86 @@ class Or(Operator):
                 query_value = float(value)
             else:
                 query_value = value
-            queries.append({field : query_value})
-        
+            queries.append({field: query_value})
+
         return (Q(**query) for query in queries)
 
     def apply(self, queryset, field, value, negate=False):
+        from functools import reduce
         conditions = self.prepare_queryset_kwargs(field, value, negate)
         return queryset.filter(reduce(lambda a, b: a | b, conditions))
+
+
+class ExistsOrComp(Operator):
+    op = 'eocmp'
+    allow_negation = True
+
+    def prepare_queryset_kwargs(self, field, value, negate):
+        from mongoengine import Q
+        field_name = field.split('|')[0]
+        queries = [
+            Q(**{"{}__exists".format(field_name): not negate}),
+            Q(**{"{}__gte".format(field_name): value})
+        ]
+        return queries
+
+    def apply(self, queryset, field, value, negate=False):
+        from functools import reduce
+        conditions = self.prepare_queryset_kwargs(field, value, negate)
+        return queryset.filter(reduce(lambda a, b: a or b, conditions))
+
+
+class ExistsOrGte(ExistsOrComp):
+    op = 'eogte'
+    allow_negation = True
+
+    def prepare_queryset_kwargs(self, field, value, negate):
+        from mongoengine import Q
+        field_name = field.split('|')[0]
+        queries = [
+            Q(**{"{}__exists".format(field_name): not negate}),
+            Q(**{"{}__gte".format(field_name): value})
+        ]
+        return queries
+
+
+class ExistsOrGt(ExistsOrComp):
+    op = 'eogt'
+    allow_negation = True
+
+    def prepare_queryset_kwargs(self, field, value, negate):
+        from mongoengine import Q
+        field_name = field.split('|')[0]
+        queries = [
+            Q(**{"{}__exists".format(field_name): not negate}),
+            Q(**{"{}__gt".format(field_name): value})
+        ]
+        return queries
+
+
+class ExistsOrLte(ExistsOrComp):
+    op = 'eolte'
+    allow_negation = True
+
+    def prepare_queryset_kwargs(self, field, value, negate):
+        from mongoengine import Q
+        field_name = field.split('|')[0]
+        queries = [
+            Q(**{"{}__exists".format(field_name): not negate}),
+            Q(**{"{}__lte".format(field_name): value})
+        ]
+        return queries
+
+
+class ExistsOrLt(ExistsOrComp):
+    op = 'eolt'
+    allow_negation = True
+
+    def prepare_queryset_kwargs(self, field, value, negate):
+        from mongoengine import Q
+        field_name = field.split('|')[0]
+        queries = [
+            Q(**{"{}__exists".format(field_name): not negate}),
+            Q(**{"{}__lt".format(field_name): value})
+        ]
+        return queries
