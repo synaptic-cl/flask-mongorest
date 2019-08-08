@@ -227,15 +227,6 @@ class ExistsOrComp(Operator):
     op = 'eocmp'
     allow_negation = True
 
-    def prepare_queryset_kwargs(self, field, value, negate):
-        from mongoengine import Q
-        field_name = field.split('|')[0]
-        queries = [
-            Q(**{"{}__exists".format(field_name): not negate}),
-            Q(**{"{}__gte".format(field_name): value})
-        ]
-        return queries
-
     def apply(self, queryset, field, value, negate=False):
         from functools import reduce
         conditions = self.prepare_queryset_kwargs(field, value, negate)
@@ -244,7 +235,6 @@ class ExistsOrComp(Operator):
 
 class ExistsOrGte(ExistsOrComp):
     op = 'eogte'
-    allow_negation = True
 
     def prepare_queryset_kwargs(self, field, value, negate):
         from mongoengine import Q
@@ -258,7 +248,6 @@ class ExistsOrGte(ExistsOrComp):
 
 class ExistsOrGt(ExistsOrComp):
     op = 'eogt'
-    allow_negation = True
 
     def prepare_queryset_kwargs(self, field, value, negate):
         from mongoengine import Q
@@ -272,7 +261,6 @@ class ExistsOrGt(ExistsOrComp):
 
 class ExistsOrLte(ExistsOrComp):
     op = 'eolte'
-    allow_negation = True
 
     def prepare_queryset_kwargs(self, field, value, negate):
         from mongoengine import Q
@@ -286,7 +274,6 @@ class ExistsOrLte(ExistsOrComp):
 
 class ExistsOrLt(ExistsOrComp):
     op = 'eolt'
-    allow_negation = True
 
     def prepare_queryset_kwargs(self, field, value, negate):
         from mongoengine import Q
