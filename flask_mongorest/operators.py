@@ -230,7 +230,7 @@ class ExistsOrComp(Operator):
     def apply(self, queryset, field, value, negate=False):
         from functools import reduce
         conditions = self.prepare_queryset_kwargs(field, value, negate)
-        return queryset.filter(reduce(lambda a, b: a or b, conditions))
+        return queryset.filter(reduce(lambda a, b: a | b, conditions))
 
 
 class ExistsOrGte(ExistsOrComp):
