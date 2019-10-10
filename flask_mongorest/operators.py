@@ -238,7 +238,8 @@ class ExistsOrGte(ExistsOrComp):
 
     def prepare_queryset_kwargs(self, field, value, negate):
         from mongoengine import Q
-        field_name = field.split('|')[0]
+        field_name = field.split('__not')[0]
+        field_name = field_name.split('__eogte')[0]
         queries = [
             Q(**{"{}__exists".format(field_name): not negate}),
             Q(**{"{}__gte".format(field_name): value})
@@ -251,7 +252,8 @@ class ExistsOrGt(ExistsOrComp):
 
     def prepare_queryset_kwargs(self, field, value, negate):
         from mongoengine import Q
-        field_name = field.split('|')[0]
+        field_name = field.split('__not')[0]
+        field_name = field_name.split('__eogt')[0]
         queries = [
             Q(**{"{}__exists".format(field_name): not negate}),
             Q(**{"{}__gt".format(field_name): value})
@@ -264,7 +266,8 @@ class ExistsOrLte(ExistsOrComp):
 
     def prepare_queryset_kwargs(self, field, value, negate):
         from mongoengine import Q
-        field_name = field.split('|')[0]
+        field_name = field.split('__not')[0]
+        field_name = field_name.split('__eolte')[0]
         queries = [
             Q(**{"{}__exists".format(field_name): not negate}),
             Q(**{"{}__lte".format(field_name): value})
@@ -277,7 +280,8 @@ class ExistsOrLt(ExistsOrComp):
 
     def prepare_queryset_kwargs(self, field, value, negate):
         from mongoengine import Q
-        field_name = field.split('|')[0]
+        field_name = field.split('__not')[0]
+        field_name = field_name.split('__eolt')[0]
         queries = [
             Q(**{"{}__exists".format(field_name): not negate}),
             Q(**{"{}__lt".format(field_name): value})
